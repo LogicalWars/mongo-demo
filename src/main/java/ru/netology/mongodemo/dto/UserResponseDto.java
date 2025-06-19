@@ -10,6 +10,6 @@ import lombok.NoArgsConstructor;
 public class UserResponseDto {
     private String id;
     private String name;
-    private String surname;
+    private String email;
     private int age;
 }
