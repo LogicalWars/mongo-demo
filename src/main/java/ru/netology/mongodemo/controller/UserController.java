@@ -1,9 +1,14 @@
 package ru.netology.mongodemo.controller;
 
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.access.prepost.PostAuthorize;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import ru.netology.mongodemo.dto.UserRequestDto;
 import ru.netology.mongodemo.dto.UserResponseDto;
@@ -18,22 +23,31 @@ import java.util.List;
 public class UserController {
     private final UserService usersService;
 
+    @RolesAllowed("ROLE_WRITE")
     @PostMapping()
     public ResponseEntity<UserResponseDto> addUsers(@Valid @RequestBody UserRequestDto userRequestDto) {
         UserResponseDto responseDto = usersService.createUser(userRequestDto);
         return ResponseEntity.ok().body(responseDto);
     }
 
+    @Secured("ROLE_READ")
     @GetMapping()
     public ResponseEntity<List<UserResponseDto>> getUsers() {
         List<UserResponseDto> responseDto = usersService.getAllUsers();
         return ResponseEntity.ok().body(responseDto);
     }
 
+    @PreAuthorize("hasAnyRole('WRITE', 'DELETE')")
     @GetMapping("/{id}")
     public ResponseEntity<UserResponseDto> getUserById(@PathVariable String id) {
         UserResponseDto responseDto = usersService.getUserById(id);
         return ResponseEntity.ok().body(responseDto);
+    }
+
+    @PostAuthorize("returnObject == authentication.principal.username")
+    @GetMapping("/username")
+    public String getUsername(@RequestParam String username) {
+        return username;
     }
 
     @GetMapping("/name/{name}")
